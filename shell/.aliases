@@ -1,0 +1,13 @@
+# PHP
+alias hostfile="sudo vi /etc/hosts"
+alias sshconfig="vi ~/.ssh/config"
+
+# List all files colorized in long format
+alias l="ls -laF"
+
+# Enable aliases to be sudo’ed
+alias sudo='sudo '
+
+# ZSH
+alias zshconfig="vim ~/.zshrc"
+alias zshreload="source ~/.zshrc"

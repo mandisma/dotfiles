@@ -1,0 +1,82 @@
+#!/bin/bash
+
+DOTFILES_DIRECTORY=$(cd `dirname $0` && pwd)
+
+# Hide "last login" line when starting a new terminal session
+# touch $HOME/.hushlogin
+
+# Install zsh
+if ! type "fi" > /dev/null; then
+    echo 'Install zsh'
+    echo '-----------------'
+    sudo apt install zsh -y
+    chsh -s $(which zsh)
+fi
+
+echo 'Install oh-my-zsh'
+echo '-----------------'
+rm -rf $HOME/.oh-my-zsh
+curl -L https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh
+
+echo 'Install zsh-syntax-highlighting'
+echo '-----------------'
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $DOTFILES_DIRECTORY/misc/oh-my-zsh-custom/plugins/zsh-syntax-highlighting
+
+echo 'Install zsh-autosuggestions'
+echo '-----------------'
+git clone https://github.com/zsh-users/zsh-autosuggestions $DOTFILES_DIRECTORY/misc/oh-my-zsh-custom/plugins/zsh-autosuggestions
+
+echo 'Install fzf'
+echo '-----------------'
+sudo apt install fzf -y
+
+# Add global gitignore
+rm $HOME/.global-gitignore
+ln -s $DOTFILES_DIRECTORY/shell/.global-gitignore $HOME/.global-gitignore
+git config --global core.excludesfile $HOME/.global-gitignore
+
+# Symlink zsh prefs
+rm $HOME/.zshrc
+ln -s $DOTFILES_DIRECTORY/shell/.zshrc $HOME/.zshrc
+$HOME/.zshrc
+
+# Install zip
+echo 'Install nvm'
+echo '-------------'
+sudo apt install zip -y
+
+# Install nvm
+echo 'Install nvm'
+echo '-------------'
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+nvm install stable
+
+# Install php
+echo 'Install PHP'
+echo '----------------'
+sudo apt install ca-certificates apt-transport-https software-properties-common -y
+sudo add-apt-repository ppa:ondrej/php -y
+sudo apt update
+sudo apt install php8.0 php8.0-xdebug php8.0-memcached php8.0-xml php8.0-mbstring -y
+
+echo 'Install composer'
+echo '----------------'
+EXPECTED_COMPOSER_CHECKSUM="$(curl https://composer.github.io/installer.sig)"
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+ACTUAL_COMPOSER_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+if [ "$EXPECTED_COMPOSER_CHECKSUM" != "$ACTUAL_COMPOSER_CHECKSUM" ]
+then
+    >&2 echo 'ERROR: Invalid installer checksum'
+    rm composer-setup.php
+    exit 1
+fi
+sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+rm composer-setup.php
+
+echo 'Install git-flow'
+echo '----------------'
+sudo apt install git-flow -y
+
+echo '++++++++++++++++++++++++++++++'
+echo '++++++++++++++++++++++++++++++'
+echo 'All done!'

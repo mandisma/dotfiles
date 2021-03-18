@@ -1,0 +1,8 @@
+# Docker
+function ssh-docker() {
+   docker exec -it "$@" bash
+}
+
+archive () {
+   zip -r "$1".zip -i "$1" ;
+}

@@ -1,0 +1,2 @@
+misc/oh-my-zsh-custom/plugins/*
+!misc/oh-my-zsh-custom/plugins/.gitkeep
