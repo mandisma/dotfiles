@@ -1,2 +1,3 @@
 misc/oh-my-zsh-custom/plugins/*
-!misc/oh-my-zsh-custom/plugins/.gitkeep
+shell/.vim/*
+!.gitkeep

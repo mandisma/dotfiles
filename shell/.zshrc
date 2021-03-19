@@ -13,6 +13,11 @@ ZSH_CUSTOM=$DOTFILES_DIRECTORY/misc/oh-my-zsh-custom
 # time that oh-my-zsh is loaded.
 ZSH_THEME="bureau"
 
+# https://github.com/seebi/dircolors-solarized
+if [ -f ~/.dircolors ]; then
+    eval `dircolors ~/.dircolors`
+fi
+
 # Hide username in prompt
 DEFAULT_USER=`whoami`
 
