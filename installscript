@@ -6,7 +6,7 @@ DOTFILES_DIRECTORY=$(cd `dirname $0` && pwd)
 # touch $HOME/.hushlogin
 
 # Install zsh
-if ! type "fi" > /dev/null; then
+if ! type "zsh" > /dev/null; then
     echo 'Install zsh'
     echo '-----------------'
     sudo apt install zsh -y
@@ -51,7 +51,7 @@ curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.c
 vim +PlugInstall +qall
 
 # Install zip
-echo 'Install nvm'
+echo 'Install zip'
 echo '-------------'
 sudo apt install zip -y
 

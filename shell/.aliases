@@ -11,3 +11,5 @@ alias sudo='sudo '
 # ZSH
 alias zshconfig="vim ~/.zshrc"
 alias zshreload="source ~/.zshrc"
+
+alias p="cd ~/Projects"

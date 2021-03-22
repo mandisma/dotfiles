@@ -14,6 +14,7 @@ ZSH_CUSTOM=$DOTFILES_DIRECTORY/misc/oh-my-zsh-custom
 ZSH_THEME="bureau"
 
 # https://github.com/seebi/dircolors-solarized
+# curl https://raw.githubusercontent.com/seebi/dircolors-solarized/master/dircolors.ansi-dark --output ~/.dircolors
 if [ -f ~/.dircolors ]; then
     eval `dircolors ~/.dircolors`
 fi
