@@ -54,6 +54,12 @@ for file in $DOTFILES_DIRECTORY/shell/.{exports,aliases,functions}; do
     [ -r "$file" ] && [ -f "$file" ] && source "$file"
 done
 
+for file in $DOTFILES_DIRECTORY/custom/shell/.{exports,aliases,functions,zshrc}; do
+	[ -r "$file" ] && [ -f "$file" ] && source "$file"
+done
+
+unset file
+
 # This loads nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"

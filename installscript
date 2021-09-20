@@ -13,6 +13,8 @@ if ! type "zsh" > /dev/null; then
     chsh -s $(which zsh)
 fi
 
+sudo apt install curl wget -y
+
 echo 'Install oh-my-zsh'
 echo '-----------------'
 rm -rf $HOME/.oh-my-zsh
@@ -49,6 +51,9 @@ rm $HOME/.zshrc
 ln -s $DOTFILES_DIRECTORY/shell/.zshrc $HOME/.zshrc
 $HOME/.zshrc
 
+# Install vim
+sudo apt install vim -y
+
 # Symlink vim prefs
 rm $HOME/.vimrc
 ln -s $DOTFILES_DIRECTORY/shell/.vimrc $HOME/.vimrc
@@ -73,12 +78,11 @@ nvm install stable
 # Install php
 echo 'Install PHP'
 echo '----------------'
-sudo apt install ca-certificates apt-transport-https software-properties-common -y
-sudo add-apt-repository ppa:ondrej/php -y
-sudo apt update
-sudo apt install php8.0 php8.0-xdebug php8.0-memcached php8.0-xml php8.0-mbstring php-curl -y
+sudo apt install php php-xdebug php-memcached php-xml php-mbstring php-curl -y
 
 # PhpBrew
+echo 'Install PhpBrew'
+echo '----------------'
 sudo apt install \
   build-essential \
   libbz2-dev \
@@ -88,16 +92,15 @@ sudo apt install \
   libzip-dev \
   libssl-dev \
   libxml2-dev \
-  libxslt-dev \
+  libxslt1-dev \
   pkg-config \
-  libonig-dev \
-  autoconfig
+  libonig-dev -y \
+  php-dev
 
 curl -L -O https://github.com/phpbrew/phpbrew/raw/master/phpbrew
 chmod +x phpbrew
 sudo mv phpbrew /usr/local/bin/phpbrew
 phpbrew init
-phpbrew lookup-prefix ubuntu 
 
 echo 'Install composer'
 echo '----------------'
