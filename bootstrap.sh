@@ -3,7 +3,7 @@
 # bootstrap installs things.
 
 function bootstrapTerminal() {	
-    DOTFILES_DIRECTORY=$(cd `dirname $0` && pwd)
+    DOTFILES_DIRECTORY=$(cd "$(dirname "$0")" && pwd)
     sudo -v #ask password beforehand
     source $DOTFILES_DIRECTORY/installscript
 }

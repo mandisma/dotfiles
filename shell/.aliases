@@ -1,5 +1,10 @@
-# PHP
+# Run PHP with XDEBUG_MODE=debug
+alias phpxmd="XDEBUG_MODE=debug php"
+
+# Edit hosts file
 alias hostfile="sudo vi /etc/hosts"
+
+# Edit ssh config
 alias sshconfig="vi ~/.ssh/config"
 
 # List all files colorized in long format
@@ -12,4 +17,5 @@ alias sudo='sudo '
 alias zshconfig="vim ~/.zshrc"
 alias zshreload="source ~/.zshrc"
 
+# Other
 alias p="cd ~/Projects"
