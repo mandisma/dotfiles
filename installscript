@@ -52,7 +52,7 @@ ln -s "$DOTFILES_DIRECTORY/shell/.zshrc" "$HOME/.zshrc"
 $HOME/.zshrc
 
 # Neovim
-sudo apt install nvim -y
+sudo apt install neovim -y
 mkdir -p "$HOME/.config"
 ln -s "$DOTFILES_DIRECTORY/shell/nvim" "$HOME/.config/nvim"
 
@@ -66,51 +66,61 @@ echo '-------------'
 sudo apt install zip -y
 
 # Install nvm
-echo 'Install nvm'
-echo '-------------'
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
-nvm install stable
+read -p "Do you wish to install nvm ? [Yn] " -n 1 -r yn
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo 'Install nvm'
+    echo '-------------'
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+    nvm install stable
+fi
+
+echo
 
 # Install php
-echo 'Install PHP'
-echo '----------------'
-sudo apt install php php-xdebug php-memcached php-xml php-mbstring php-curl -y
+read -p "Do you wish to install php ? [Yn] " -n 1 -r yn
 
-# PhpBrew
-echo 'Install PhpBrew'
-echo '----------------'
-sudo apt install \
-  build-essential \
-  libbz2-dev \
-  libreadline-dev \
-  libsqlite3-dev \
-  libcurl4-gnutls-dev \
-  libzip-dev \
-  libssl-dev \
-  libxml2-dev \
-  libxslt1-dev \
-  pkg-config \
-  libonig-dev -y \
-  php-dev
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo 'Install PHP'
+    echo '----------------'
+    sudo apt install php php-xdebug php-memcached php-xml php-mbstring php-curl -y
 
-curl -L -O https://github.com/phpbrew/phpbrew/raw/master/phpbrew
-chmod +x phpbrew
-sudo mv phpbrew /usr/local/bin/phpbrew
-phpbrew init
+    # PhpBrew
+    echo 'Install PhpBrew'
+    echo '----------------'
+    sudo apt install \
+    build-essential \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    libcurl4-gnutls-dev \
+    libzip-dev \
+    libssl-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    pkg-config \
+    libonig-dev -y \
+    php-dev
 
-echo 'Install composer'
-echo '----------------'
-EXPECTED_COMPOSER_CHECKSUM="$(curl https://composer.github.io/installer.sig)"
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-ACTUAL_COMPOSER_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
-if [ "$EXPECTED_COMPOSER_CHECKSUM" != "$ACTUAL_COMPOSER_CHECKSUM" ]
-then
-    >&2 echo 'ERROR: Invalid installer checksum'
+    curl -L -O https://github.com/phpbrew/phpbrew/raw/master/phpbrew
+    chmod +x phpbrew
+    sudo mv phpbrew /usr/local/bin/phpbrew
+    phpbrew init
+
+    echo 'Install composer'
+    echo '----------------'
+    EXPECTED_COMPOSER_CHECKSUM="$(curl https://composer.github.io/installer.sig)"
+    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    ACTUAL_COMPOSER_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+    if [ "$EXPECTED_COMPOSER_CHECKSUM" != "$ACTUAL_COMPOSER_CHECKSUM" ]
+    then
+        >&2 echo 'ERROR: Invalid installer checksum'
+        rm composer-setup.php
+        exit 1
+    fi
+    sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
     rm composer-setup.php
-    exit 1
 fi
-sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-rm composer-setup.php
 
 echo 'Install git-flow'
 echo '----------------'

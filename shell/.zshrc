@@ -35,8 +35,6 @@ DEFAULT_USER=`whoami`
 plugins=(
     git
     git-flow-avh
-    nvm
-    composer
     zsh-syntax-highlighting
     zsh-autosuggestions
     docker
@@ -44,10 +42,13 @@ plugins=(
     colored-man-pages
 )
 
-source $ZSH/oh-my-zsh.sh
+if command -v composer &> /dev/null; then
+    plugins+=("composer")
+fi
 
-source /usr/share/doc/fzf/examples/key-bindings.zsh
-source /usr/share/doc/fzf/examples/completion.zsh
+if command -v nvm &> /dev/null; then
+    plugins+=("nvm")
+fi
 
 # Load the shell dotfiles, and then some:
 # * ~/.dotfiles-custom can be used for other settings you don’t want to commit.
@@ -61,18 +62,28 @@ done
 
 unset file
 
-# Loads nvm
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+source $ZSH/oh-my-zsh.sh
+source /usr/share/doc/fzf/examples/key-bindings.zsh
+source /usr/share/doc/fzf/examples/completion.zsh
 
-[[ -e ~/.phpbrew/bashrc ]] && source ~/.phpbrew/bashrc
+# Loads nvm
+if [ -d "$HOME/.nvm" ]; then
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+fi
+
+if [ -f ~/.phpbrew/bashrc ]; then
+    [[ -e ~/.phpbrew/bashrc ]] && source ~/.phpbrew/bashrc
+fi
 
 # Setup xdebug
 export XDEBUG_CONFIG="idekey=VSCODE"
 
 # Extra paths
-export PATH="$HOME/.composer/vendor/bin:$PATH"
+if [ -d "$HOME/.composer/vendor/bin" ]; then
+    export PATH="$HOME/.composer/vendor/bin:$PATH"
+fi
 export PATH=/usr/local/bin:$PATH
 export PATH="$HOME/.local/bin:$PATH"
 
