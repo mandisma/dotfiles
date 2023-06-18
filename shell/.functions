@@ -1,8 +1,3 @@
-# Docker
-function ssh-docker() {
-   docker exec -it "$@" bash
-}
-
-archive () {
-   zip -r "$1".zip -i "$1" ;
+function ggone() {
+    git fetch -p && for branch in $(git branch -vv | grep ': gone]' | awk '{print $1}'); do git branch -D $branch; done
 }

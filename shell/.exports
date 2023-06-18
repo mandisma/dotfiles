@@ -1,5 +1,5 @@
-# Make vim the default editor
-export EDITOR="vim"
+# Make nvim the default editor
+export EDITOR="nvim"
 
 # Make some commands not show up in history
 export HISTIGNORE="ls:cd:cd -:pwd:exit:date:* --help"
@@ -9,5 +9,12 @@ export HISTORY_IGNORE="(ls|cd|cd -|pwd|exit|date|* --help)"
 # Highlight section titles in manual pages
 export LESS_TERMCAP_md="$ORANGE"
 
+if [ -d "$HOME/.composer/vendor/bin" ]; then
+    export PATH="$HOME/.composer/vendor/bin:$PATH"
+fi
+
 # Search for phpbrewrc
 export PHPBREW_RC_ENABLE=1
+
+export PATH=/usr/local/bin:$PATH
+export PATH="$HOME/.local/bin:$PATH"

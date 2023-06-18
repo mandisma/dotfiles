@@ -33,12 +33,12 @@ DEFAULT_USER=`whoami`
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 plugins=(
+    aliases
+    fzf
     git
-    git-flow-avh
+    copyfile
     zsh-syntax-highlighting
     zsh-autosuggestions
-    docker
-    docker-compose
     colored-man-pages
 )
 
@@ -76,16 +76,6 @@ fi
 if [ -f ~/.phpbrew/bashrc ]; then
     [[ -e ~/.phpbrew/bashrc ]] && source ~/.phpbrew/bashrc
 fi
-
-# Setup xdebug
-export XDEBUG_CONFIG="idekey=VSCODE"
-
-# Extra paths
-if [ -d "$HOME/.composer/vendor/bin" ]; then
-    export PATH="$HOME/.composer/vendor/bin:$PATH"
-fi
-export PATH=/usr/local/bin:$PATH
-export PATH="$HOME/.local/bin:$PATH"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

@@ -168,6 +168,9 @@ echo 'Install tldr'
 echo '----------------'
 pip3 install tldr
 
+echo 'Install bat'
+echo '----------------'
+sudo $PACKAGE_MANAGER install bat
 
 echo '++++++++++++++++++++++++++++++'
 echo '++++++++++++++++++++++++++++++'
