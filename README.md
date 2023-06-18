@@ -2,4 +2,4 @@
 
 ## Installation
 
-Run the file `bootstrap.sh
+Run the file `bootstrap.sh`

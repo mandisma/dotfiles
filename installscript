@@ -1,19 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 DOTFILES_DIRECTORY=$(cd "$(dirname "$0")" && pwd)
-
-# Hide "last login" line when starting a new terminal session
-# touch $HOME/.hushlogin
+PACKAGE_MANAGER=$1
 
 # Install zsh
 if ! type "zsh" > /dev/null; then
     echo 'Install zsh'
     echo '-----------------'
-    sudo apt install zsh -y
+    sudo $PACKAGE_MANAGER install zsh -y
     chsh -s "$(which zsh)"
 fi
 
-sudo apt install curl wget -y
+sudo $PACKAGE_MANAGER install curl wget -y
 
 echo 'Install oh-my-zsh'
 echo '-----------------'
@@ -34,7 +32,7 @@ git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$DOTFILES_DIRE
 
 echo 'Install fzf'
 echo '-----------------'
-sudo apt install fzf -y
+sudo $PACKAGE_MANAGER install fzf -y
 
 # Add global gitignore
 rm "$HOME/.global-gitignore"
@@ -52,7 +50,7 @@ ln -s "$DOTFILES_DIRECTORY/shell/.zshrc" "$HOME/.zshrc"
 $HOME/.zshrc
 
 # Neovim
-sudo apt install neovim -y
+sudo $PACKAGE_MANAGER install neovim -y
 mkdir -p "$HOME/.config"
 ln -s "$DOTFILES_DIRECTORY/shell/nvim" "$HOME/.config/nvim"
 
@@ -63,7 +61,7 @@ nvim +PlugInstall +qall
 # Install zip
 echo 'Install zip'
 echo '-------------'
-sudo apt install zip -y
+sudo $PACKAGE_MANAGER install zip -y
 
 # Install nvm
 read -p "Do you wish to install nvm ? [Yn] " -n 1 -r yn
@@ -83,28 +81,39 @@ read -p "Do you wish to install php ? [Yn] " -n 1 -r yn
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo 'Install PHP'
     echo '----------------'
-    sudo apt install php php-xdebug php-memcached php-xml php-mbstring php-curl -y
+    sudo $PACKAGE_MANAGER install php php-xdebug php-memcached php-xml php-mbstring php-curl -y
 
     # PhpBrew
     echo 'Install PhpBrew'
     echo '----------------'
-    sudo apt install \
-    build-essential \
-    libbz2-dev \
-    libreadline-dev \
-    libsqlite3-dev \
-    libcurl4-gnutls-dev \
-    libzip-dev \
-    libssl-dev \
-    libxml2-dev \
-    libxslt1-dev \
-    pkg-config \
-    libonig-dev -y \
-    php-dev
+
+    if ["$PACKAGE_MANAGER" = "apt"]; then
+        sudo $PACKAGE_MANAGER install \
+            build-essential \
+            libbz2-dev \
+            libreadline-dev \
+            libsqlite3-dev \
+            libcurl4-gnutls-dev \
+            libzip-dev \
+            libssl-dev \
+            libxml2-dev \
+            libxslt1-dev \
+            pkg-config \
+            libonig-dev -y \
+            php-dev
+    elif ["$PACKAGE_MANAGER" = "dnf"]; then
+        sudo $PACKAGE_MANAGER install \
+            make gcc gcc-c++ kernel-devel \
+            php-json php-bz2 php-devel php-pear \
+            bzip2-devel yum-utils libmcrypt-devel libpq-devel libxslt-devel pcre-devel \
+            libcurl-devel libgsasl-devel openldap-devel \
+            libzip-devel readline-devel \
+            oniguruma-devel
+    fi
 
     curl -L -O https://github.com/phpbrew/phpbrew/raw/master/phpbrew
     chmod +x phpbrew
-    sudo mv phpbrew /usr/local/bin/phpbrew
+    sudo mv phpbrew "$HOME/.local/bin/phpbrew"
     phpbrew init
 
     echo 'Install composer'
@@ -124,7 +133,7 @@ fi
 
 echo 'Install git-flow'
 echo '----------------'
-sudo apt install git-flow -y
+sudo $PACKAGE_MANAGER install git-flow -y
 
 echo 'Install diff-so-fancy'
 echo '----------------'
@@ -152,7 +161,7 @@ git config --global color.diff.whitespace "red reverse"
 
 echo 'Install Python / pip'
 echo '----------------'
-sudo apt install python3 python3-venv python3-pip -y
+sudo $PACKAGE_MANAGER install python3 python3-venv python3-pip -y
 
 
 echo 'Install tldr'
