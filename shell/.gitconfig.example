@@ -1,0 +1,6 @@
+[include]
+	path = DOTFILES_DIRECTORY/shell/.global-gitconfig
+
+[user]
+	email = AUTHOREMAIL
+	name = AUTHORNAME
