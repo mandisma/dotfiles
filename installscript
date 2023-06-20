@@ -11,7 +11,7 @@ if ! type "zsh" > /dev/null; then
     chsh -s "$(which zsh)"
 fi
 
-sudo $PACKAGE_MANAGER install curl wget -y
+sudo $PACKAGE_MANAGER install curl wget zip -y
 
 echo 'Install oh-my-zsh'
 echo '-----------------'
@@ -26,9 +26,11 @@ echo 'Install zsh-autosuggestions'
 echo '-----------------'
 git clone https://github.com/zsh-users/zsh-autosuggestions "$DOTFILES_DIRECTORY/misc/oh-my-zsh-custom/plugins/zsh-autosuggestions"
 
-echo 'Install powerlevel10k'
+echo 'Install starship'
 echo '-----------------'
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$DOTFILES_DIRECTORY/misc/oh-my-zsh-custom/themes/powerlevel10k"
+curl -sS https://starship.rs/install.sh | sh
+rm "$HOME/.config/starship.toml"
+ln -s "$DOTFILES_DIRECTORY/shell/starship.toml" "$HOME/.config/starship.toml"
 
 echo 'Install fzf'
 echo '-----------------'
@@ -73,11 +75,6 @@ ln -s "$DOTFILES_DIRECTORY/shell/nvim" "$HOME/.config/nvim"
 # Install nvim plugin
 curl -fLo "$HOME/.config/nvim/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 nvim +PlugInstall +qall
-
-# Install zip
-echo 'Install zip'
-echo '-------------'
-sudo $PACKAGE_MANAGER install zip -y
 
 # Install nvm
 read -p "Do you wish to install nvm ? [Yn] " -n 1 -r yn
