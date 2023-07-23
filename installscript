@@ -1,7 +1,19 @@
 #!/usr/bin/env bash
+# This script installs various developer tools and set up configurations.
+
+# Checking package manager
+if [[ -z "$1" ]]; then
+    echo "You must provide package manager as an argument (apt or dnf)."
+    exit 1
+fi
+
+PACKAGE_MANAGER="$1"
+
+# Update first
+echo "Updating package repositories..."
+sudo $PACKAGE_MANAGER update
 
 DOTFILES_DIRECTORY=$(cd "$(dirname "$0")" && pwd)
-PACKAGE_MANAGER=$1
 
 # Install zsh
 if ! type "zsh" > /dev/null; then

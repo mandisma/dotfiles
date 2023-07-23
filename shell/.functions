@@ -1,3 +1,24 @@
 function ggone() {
     git fetch -p && for branch in $(git branch -vv | grep ': gone]' | awk '{print $1}'); do git branch -D $branch; done
 }
+
+function starship_update() {
+    curl -sS https://starship.rs/install.sh -o /tmp/install.sh
+    if [ $? -ne 0 ]; then
+        echo "Failed to download the installation script."
+        exit 2
+    fi
+
+    sh /tmp/install.sh
+    if [ $? -ne 0 ]; then
+        echo "Starship update failed."
+        exit 3
+    fi
+
+    starship --version
+    if [ $? -ne 0 ]; then
+        echo "Failed to verify Starship version."
+        exit 4
+    fi
+}
+

@@ -1,33 +1,56 @@
 #!/usr/bin/env bash
 
-function bootstrapTerminal() {
-    DOTFILES_DIRECTORY=$(cd "$(dirname "$0")" && pwd)
-    sudo -v #ask password beforehand
-    source "$DOTFILES_DIRECTORY/installscript" $1
+bootstrap_terminal() {
+    local dotfiles_directory=$(cd "$(dirname "$0")" && pwd)
+
+    if [ -z "$dotfiles_directory" ]; then
+        echo "Error: Unable to determine the dotfiles directory!"
+        exit 1
+    fi
+
+    sudo -v
+
+    source "$dotfiles_directory/installscript" $1
 }
 
-declare -A packageManagers;
-packageManagers[ubuntu]=apt
-packageManagers[debian]=apt
-packageManagers[fedora]=dnf
+declare -A package_managers=(
+  ["ubuntu"]="apt"
+  ["debian"]="apt"
+  ["fedora"]="dnf"
+)
 
-OS_ID=$(awk -F= '$1=="ID" { print $2 ;}' /etc/os-release)
-PACKAGE_MANAGER=$(echo ${packageManagers[$OS_ID]})
-
-if ! command -v $PACKAGE_MANAGER &> /dev/null; then
-    echo "Aborting! Unable to detect package manager."
+os_id=$(awk -F= '$1=="ID" { print $2 ;}' /etc/os-release)
+if [ -z "$os_id" ]; then
+    echo "Error: Unable to determine OS!"
     exit 1
 fi
 
-echo 'Bootstrap terminal'
-echo '------------------'
-echo "OS detected: $OS_ID"
-echo "Package manager: $PACKAGE_MANAGER"
-echo '------------------'
-echo 'This will reset your terminal. Are you sure you want to to this? (y/n) '
-read -p 'Answer: '  reply
+package_manager=${package_managers[$os_id]}
+if [ -z "$package_manager" ]; then
+    echo "Sorry, your OS is unsupported."
+    exit 1
+fi
 
-if [[ $reply =~ ^[Yy]$ ]]
+if ! command -v $package_manager &> /dev/null; then
+    echo "Error: Unable to detect package manager!"
+    exit 1
+fi
+
+printf 'Bootstrap terminal\n'
+echo '------------------'
+printf "OS detected: $os_id\n"
+printf "Package manager: $package_manager\n"
+echo '------------------'
+
+until [[ $reply =~ ^[YyNn]$ ]]
+do
+  read -rp "This will reset your terminal. Continue ? [Y/n]: " reply
+done
+
+if [[ $reply =~ ^[Nn]$ ]]
 then
-    bootstrapTerminal $PACKAGE_MANAGER
+    printf "Aborting.\n"
+    exit 1
+else
+    bootstrap_terminal $package_manager
 fi
