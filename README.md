@@ -1,4 +1,4 @@
-# My personnal dotfiles
+# My personal dotfiles
 
 ## Installation
 

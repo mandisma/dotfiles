@@ -1,184 +1,243 @@
-#!/usr/bin/env bash
 # This script installs various developer tools and set up configurations.
 
-# Checking package manager
-if [[ -z "$1" ]]; then
-    echo "You must provide package manager as an argument (apt or dnf)."
-    exit 1
-fi
+# Initialize color variables
+GREEN=$(tput setaf 2)
+RED=$(tput setaf 1)
+BLUE=$(tput setaf 4)
+NORMAL=$(tput sgr0)
 
-PACKAGE_MANAGER="$1"
-
-# Update first
-echo "Updating package repositories..."
-sudo $PACKAGE_MANAGER update
-
+# Define the location of dotfiles directory
 DOTFILES_DIRECTORY=$(cd "$(dirname "$0")" && pwd)
 
-# Install zsh
-if ! type "zsh" > /dev/null; then
-    echo 'Install zsh'
-    echo '-----------------'
-    sudo $PACKAGE_MANAGER install zsh -y
-    chsh -s "$(which zsh)"
-fi
+success() {
+    printf "${GREEN}%s${NORMAL}\n" "$1"
+}
 
-sudo $PACKAGE_MANAGER install curl wget zip -y
+info() {
+    printf "${BLUE}%s${NORMAL}\n" "$1"
+}
 
-echo 'Install oh-my-zsh'
-echo '-----------------'
-rm -rf "$HOME/.oh-my-zsh"
-curl -L https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh
+error() {
+    printf "${RED}%s${NORMAL}\n" "$1"
+}
 
-echo 'Install zsh-syntax-highlighting'
-echo '-----------------'
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$DOTFILES_DIRECTORY/misc/oh-my-zsh-custom/plugins/zsh-syntax-highlighting"
+header() {
+    info "========== $1 =========="
+}
 
-echo 'Install zsh-autosuggestions'
-echo '-----------------'
-git clone https://github.com/zsh-users/zsh-autosuggestions "$DOTFILES_DIRECTORY/misc/oh-my-zsh-custom/plugins/zsh-autosuggestions"
-
-echo 'Install starship'
-echo '-----------------'
-curl -sS https://starship.rs/install.sh | sh
-rm "$HOME/.config/starship.toml"
-ln -s "$DOTFILES_DIRECTORY/shell/starship.toml" "$HOME/.config/starship.toml"
-
-echo 'Install fzf'
-echo '-----------------'
-sudo $PACKAGE_MANAGER install fzf -y
-
-# Add global gitignore
-rm "$HOME/.global-gitignore"
-ln -s "$DOTFILES_DIRECTORY/shell/.global-gitignore" "$HOME/.global-gitignore"
-
-echo 'Install gitconfig'
-echo '-----------------'
-
-# Add gitconfig
-if ! [ -f "$HOME/.gitconfig" ]; then
-
-    read -p " - What is your github author name? " git_authorname
-    read -p " - What is your github author email? " git_authoremail
-
-    sed -e "s/AUTHORNAME/$git_authorname/g" \
-        -e "s/AUTHOREMAIL/$git_authoremail/g" \
-        -e "s+DOTFILES_DIRECTORY+$DOTFILES_DIRECTORY+g" \
-        "$DOTFILES_DIRECTORY/shell/.gitconfig.example" > "$HOME/.gitconfig"
-else
-    echo " - .gitconfig already exists."
-fi
-
-# Symlink p10k conf
-rm "$HOME/.p10k.zsh"
-ln -s "$DOTFILES_DIRECTORY/shell/.p10k.zsh" "$HOME/.p10k.zsh"
-$HOME/.p10k.zsh
-
-# Symlink zsh prefs
-rm "$HOME/.zshrc"
-ln -s "$DOTFILES_DIRECTORY/shell/.zshrc" "$HOME/.zshrc"
-$HOME/.zshrc
-
-# Neovim
-sudo $PACKAGE_MANAGER install neovim -y
-mkdir -p "$HOME/.config"
-ln -s "$DOTFILES_DIRECTORY/shell/nvim" "$HOME/.config/nvim"
-
-# Install nvim plugin
-curl -fLo "$HOME/.config/nvim/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-nvim +PlugInstall +qall
-
-# Install nvm
-read -p "Do you wish to install nvm ? [Yn] " -n 1 -r yn
-
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo 'Install nvm'
-    echo '-------------'
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
-    nvm install stable
-fi
-
-echo
-
-# Install php
-read -p "Do you wish to install php ? [Yn] " -n 1 -r yn
-
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo 'Install PHP'
-    echo '----------------'
-    sudo $PACKAGE_MANAGER install php php-xdebug php-memcached php-xml php-mbstring php-curl -y
-
-    # PhpBrew
-    echo 'Install PhpBrew'
-    echo '----------------'
-
-    if ["$PACKAGE_MANAGER" = "apt"]; then
-        sudo $PACKAGE_MANAGER install \
-            build-essential \
-            libbz2-dev \
-            libreadline-dev \
-            libsqlite3-dev \
-            libcurl4-gnutls-dev \
-            libzip-dev \
-            libssl-dev \
-            libxml2-dev \
-            libxslt1-dev \
-            pkg-config \
-            libonig-dev -y \
-            php-dev
-    elif ["$PACKAGE_MANAGER" = "dnf"]; then
-        sudo $PACKAGE_MANAGER install \
-            make gcc gcc-c++ kernel-devel \
-            php-json php-bz2 php-devel php-pear \
-            bzip2-devel yum-utils libmcrypt-devel libpq-devel libxslt-devel pcre-devel \
-            libcurl-devel libgsasl-devel openldap-devel \
-            libzip-devel readline-devel \
-            oniguruma-devel
-    fi
-
-    curl -L -O https://github.com/phpbrew/phpbrew/raw/master/phpbrew
-    chmod +x phpbrew
-    sudo mv phpbrew "$HOME/.local/bin/phpbrew"
-    phpbrew init
-
-    echo 'Install composer'
-    echo '----------------'
-    EXPECTED_COMPOSER_CHECKSUM="$(curl https://composer.github.io/installer.sig)"
-    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-    ACTUAL_COMPOSER_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
-    if [ "$EXPECTED_COMPOSER_CHECKSUM" != "$ACTUAL_COMPOSER_CHECKSUM" ]
-    then
-        >&2 echo 'ERROR: Invalid installer checksum'
-        rm composer-setup.php
+# Main function that orchestrates the overall tasks
+main() {
+    if [[ -z "${1}" ]]; then
+        error "You must provide package manager as an argument (apt or dnf)."
         exit 1
     fi
-    sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-    rm composer-setup.php
-fi
 
-echo 'Install git-flow'
-echo '----------------'
-sudo $PACKAGE_MANAGER install git-flow -y
+    PACKAGE_MANAGER="${1}"
 
-echo 'Install diff-so-fancy'
-echo '----------------'
-git clone https://github.com/so-fancy/diff-so-fancy $DOTFILES_DIRECTORY/misc/diffsofancy
-chmod +x $DOTFILES_DIRECTORY/misc/diffsofancy/diff-so-fancy
-sudo ln -s $DOTFILES_DIRECTORY/misc/diffsofancy/diff-so-fancy /usr/local/bin/diff-so-fancy
+    update_setup
+    zsh_installation
+    oh_my_zsh_installation
+    symlink_zsh_prefs
+    install_and_update_zsh_plugins
+    starship_installation
+    fzf_installation
+    git_configuration
+    neovim_installation
+    nvm_installation
+    php_installation
+    diff_so_fancy_installation
+    python_installation
+    tldr_installation
+    bat_installation
 
-echo 'Install Python / pip'
-echo '----------------'
-sudo $PACKAGE_MANAGER install python3 python3-venv python3-pip -y
+    success "++++++++++++++++++++++++++"
+    success "+ Installation Complete. +"
+    success "++++++++++++++++++++++++++"
+}
+
+update_setup() {
+    header "Updating package repositories..."
+    sudo "${PACKAGE_MANAGER}" update -y
+    sudo "${PACKAGE_MANAGER}" install -y curl wget zip
+}
+
+zsh_installation() {
+    if ! type "zsh" > /dev/null; then
+        header "Installing Zsh..."
+        sudo $PACKAGE_MANAGER install zsh -y
+        chsh -s "$(which zsh)"
+    fi
+}
+
+oh_my_zsh_installation() {
+    if [ ! -d "$HOME/.oh-my-zsh" ]; then
+        header "Installing Oh My Zsh..."
+        curl -L https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh
+    fi
+}
+
+symlink_zsh_prefs() {
+    header "Creating symbolic link to zshrc..."
+    rm -f "${HOME}/.zshrc"
+    ln -sv "${DOTFILES_DIRECTORY}/shell/.zshrc" "${HOME}/.zshrc"
+}
+
+install_and_update_zsh_plugins() {
+    header "Setting up Zsh Plugins..."
+
+    if [[ ! -d "${DOTFILES_DIRECTORY}/misc/oh-my-zsh-custom/plugins/zsh-syntax-highlighting" ]]
+    then
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${DOTFILES_DIRECTORY}/misc/oh-my-zsh-custom/plugins/zsh-syntax-highlighting"
+    else
+        git -C "${DOTFILES_DIRECTORY}/misc/oh-my-zsh-custom/plugins/zsh-syntax-highlighting" pull
+    fi
+
+    if [[ ! -d "${DOTFILES_DIRECTORY}/misc/oh-my-zsh-custom/plugins/zsh-autosuggestions" ]]
+    then
+        git clone https://github.com/zsh-users/zsh-autosuggestions "${DOTFILES_DIRECTORY}/misc/oh-my-zsh-custom/plugins/zsh-autosuggestions"
+    else
+        git -C "${DOTFILES_DIRECTORY}/misc/oh-my-zsh-custom/plugins/zsh-autosuggestions" pull
+    fi
+}
+
+starship_installation() {
+    header "Installing Starship..."
+    curl -sS https://starship.rs/install.sh | sh
+    rm -f "${HOME}/.config/starship.toml"
+    ln -sv "${DOTFILES_DIRECTORY}/shell/starship.toml" "${HOME}/.config/starship.toml"
+}
+
+fzf_installation() {
+    header "Installing fzf..."
+    sudo "${PACKAGE_MANAGER}" install -y fzf
+}
+
+git_configuration() {
+    header "Configuring Git..."
+    # Add global gitignore
+    rm "$HOME/.global-gitignore"
+    ln -s "$DOTFILES_DIRECTORY/shell/.global-gitignore" "$HOME/.global-gitignore"
+
+    # Add gitconfig
+    if ! [ -f "$HOME/.gitconfig" ]; then
+
+        read -p " - What is your github author name? " git_authorname
+        read -p " - What is your github author email? " git_authoremail
+
+        sed -e "s/AUTHORNAME/$git_authorname/g" \
+            -e "s/AUTHOREMAIL/$git_authoremail/g" \
+            -e "s+DOTFILES_DIRECTORY+$DOTFILES_DIRECTORY+g" \
+            "$DOTFILES_DIRECTORY/shell/.gitconfig.example" > "$HOME/.gitconfig"
+    else
+        echo " - .gitconfig already exists."
+    fi
+}
+
+neovim_installation() {
+    header "Installing neovim..."
+    sudo $PACKAGE_MANAGER install neovim -y
+    mkdir -p "$HOME/.config"
+    ln -s "$DOTFILES_DIRECTORY/shell/nvim" "$HOME/.config/nvim"
+
+    # Install nvim plugin
+    curl -fLo "$HOME/.config/nvim/autoload/plug.vim" --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    nvim +PlugInstall +qall
+}
 
 
-echo 'Install tldr'
-echo '----------------'
-pip3 install tldr
+nvm_installation() {
+  read -p "Do you wish to install nvm ? [Yn]: " -n 1 -r REPLY
 
-echo 'Install bat'
-echo '----------------'
-sudo $PACKAGE_MANAGER install bat
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+      header "Installing nvm..."
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
+      nvm install stable
+  fi
 
-echo '++++++++++++++++++++++++++++++'
-echo '++++++++++++++++++++++++++++++'
-echo 'All done!'
+  echo
+}
+
+php_installation() {
+  read -p "Do you wish to install php ? [Yn]: " -n 1 -r REPLY
+
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+      header "Installing PHP..."
+      sudo $PACKAGE_MANAGER install php php-xdebug php-memcached php-xml php-mbstring php-curl -y
+
+      # PhpBrew
+      header "Installing PhpBrew..."
+
+      declare -A phpbrew_dependencies
+
+      phpbrew_dependencies[apt]="build-essential \
+                  libbz2-dev \
+                  libreadline-dev \
+                  libsqlite3-dev \
+                  libcurl4-gnutls-dev \
+                  libzip-dev \
+                  libssl-dev \
+                  libxml2-dev \
+                  libxslt1-dev \
+                  pkg-config \
+                  libonig-dev -y \
+                  php-dev"
+
+      phpbrew_dependencies[dnf]="make gcc gcc-c++ kernel-devel \
+                  php-json php-bz2 php-devel php-pear \
+                  bzip2-devel yum-utils libmcrypt-devel libpq-devel libxslt-devel pcre-devel \
+                  libcurl-devel libgsasl-devel openldap-devel \
+                  libzip-devel readline-devel \
+                  oniguruma-devel"
+
+      sudo ${PACKAGE_MANAGER} install ${phpbrew_dependencies[$PACKAGE_MANAGER]}
+
+      curl -L -O https://github.com/phpbrew/phpbrew/raw/master/phpbrew
+      chmod +x phpbrew
+      sudo mv phpbrew "$HOME/.local/bin/phpbrew"
+      phpbrew init
+
+      header "Installing Composer..."
+      EXPECTED_COMPOSER_CHECKSUM="$(curl https://composer.github.io/installer.sig)"
+      php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+      ACTUAL_COMPOSER_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+      if [ "$EXPECTED_COMPOSER_CHECKSUM" != "$ACTUAL_COMPOSER_CHECKSUM" ]
+      then
+          >&2 echo 'ERROR: Invalid installer checksum'
+          rm composer-setup.php
+          exit 1
+      fi
+      sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+      rm composer-setup.php
+  fi
+
+  echo
+}
+
+diff_so_fancy_installation() {
+  if [ -d "$DOTFILES_DIRECTORY/misc/diffsofancy" ]; then
+      header "Updating diff-so-fancy..."
+      git -C "$DOTFILES_DIRECTORY/misc/diffsofancy" pull
+  else
+      header "Installing diff-so-fancy..."
+      git clone https://github.com/so-fancy/diff-so-fancy "$DOTFILES_DIRECTORY/misc/diffsofancy"
+      chmod +x "$DOTFILES_DIRECTORY/misc/diffsofancy/diff-so-fancy"
+      sudo ln -s "$DOTFILES_DIRECTORY/misc/diffsofancy/diff-so-fancy" /usr/local/bin/diff-so-fancy
+  fi
+}
+
+python_installation() {
+  header "Installing Python / Pip..."
+  sudo $PACKAGE_MANAGER install python3 python3-venv python3-pip -y
+}
+
+tldr_installation() {
+  header "Installing tldr..."
+  pip3 install tldr
+}
+
+bat_installation() {
+  header "Installing bat..."
+  sudo $PACKAGE_MANAGER install bat
+}
+
+main "${@}"
