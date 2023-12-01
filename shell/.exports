@@ -1,3 +1,6 @@
+# Make terminal in English
+export LANG="en_US.UTF-8"
+
 # Make nvim the default editor
 export EDITOR="nvim"
 
