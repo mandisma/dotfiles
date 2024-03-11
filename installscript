@@ -164,38 +164,6 @@ php_installation() {
       header "Installing PHP..."
       sudo $PACKAGE_MANAGER install php php-xdebug php-memcached php-xml php-mbstring php-curl -y
 
-      # PhpBrew
-      header "Installing PhpBrew..."
-
-      declare -A phpbrew_dependencies
-
-      phpbrew_dependencies[apt]="build-essential \
-                  libbz2-dev \
-                  libreadline-dev \
-                  libsqlite3-dev \
-                  libcurl4-gnutls-dev \
-                  libzip-dev \
-                  libssl-dev \
-                  libxml2-dev \
-                  libxslt1-dev \
-                  pkg-config \
-                  libonig-dev -y \
-                  php-dev"
-
-      phpbrew_dependencies[dnf]="make gcc gcc-c++ kernel-devel \
-                  php-json php-bz2 php-devel php-pear \
-                  bzip2-devel yum-utils libmcrypt-devel libpq-devel libxslt-devel pcre-devel \
-                  libcurl-devel libgsasl-devel openldap-devel \
-                  libzip-devel readline-devel \
-                  oniguruma-devel"
-
-      sudo ${PACKAGE_MANAGER} install ${phpbrew_dependencies[$PACKAGE_MANAGER]}
-
-      curl -L -O https://github.com/phpbrew/phpbrew/raw/master/phpbrew
-      chmod +x phpbrew
-      sudo mv phpbrew "$HOME/.local/bin/phpbrew"
-      phpbrew init
-
       header "Installing Composer..."
       EXPECTED_COMPOSER_CHECKSUM="$(curl https://composer.github.io/installer.sig)"
       php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"

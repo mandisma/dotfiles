@@ -16,8 +16,5 @@ if [ -d "$HOME/.composer/vendor/bin" ]; then
     export PATH="$HOME/.composer/vendor/bin:$PATH"
 fi
 
-# Search for phpbrewrc
-export PHPBREW_RC_ENABLE=1
-
 export PATH=/usr/local/bin:$PATH
 export PATH="$HOME/.local/bin:$PATH"

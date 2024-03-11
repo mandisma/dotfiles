@@ -7,14 +7,20 @@ function ggone() {
 }
 
 function starship_update() {
-    old_version=$(starship --version) || { echo "Failed to get current Starship version."; exit 1; }
+    local current_version
+    local latest_version
+    local new_version
 
-    curl -sS https://starship.rs/install.sh -o /tmp/install.sh || { echo "Failed to download the installation script."; exit 2; }
+    current_version=$(starship --version | grep starship | cut -d" " -f2) || { echo "Failed to get current Starship version."; exit 1; }
+    latest_version=$(curl --silent "https://api.github.com/repos/starship/starship/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/') || { echo "Failed to get the latest Starship version."; exit 2; }
 
-    sh /tmp/install.sh || { echo "Starship update failed."; exit 3; }
-
-    new_version=$(starship --version) || { echo "Failed to verify Starship version."; exit 4; }
-
-    echo "Old version was: $old_version"
-    echo "New version is: $new_version"
+    if [ "$current_version" != "$latest_version" ]; then
+        curl -sS https://starship.rs/install.sh -o /tmp/install.sh || { echo "Failed to download the installation script."; exit 3; }
+        sh /tmp/install.sh || { echo "Starship update failed."; exit 4; }
+        new_version=$(starship --version | grep starship | cut -d" " -f2) || { echo "Failed to verify Starship version."; exit 5; }
+        echo "Old version was: $current_version"
+        echo "New version is: $new_version"
+    else
+        echo "You already have the latest Starship version: $current_version"
+    fi
 }

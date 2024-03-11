@@ -1,27 +1,11 @@
-# Path to your oh-my-zsh configuration.
+# Standard shell variables
 ZSH=$HOME/.oh-my-zsh
-
-zshrc_target=$(readlink -f ~/.zshrc)
-DOTFILES_DIRECTORY=$(cd `dirname $zshrc_target`/.. && pwd)
-unset zshrc_target
-
+DOTFILES_DIRECTORY=$(cd `dirname $(readlink -f ~/.zshrc)`/.. && pwd)
 ZSH_CUSTOM=$DOTFILES_DIRECTORY/misc/oh-my-zsh-custom
-
-# Set name of the theme to load.
-# Look in ~/.oh-my-zsh/themes/
-# Optionally, if you set this to "random", it'll load a random theme each
-# time that oh-my-zsh is loaded.
-ZSH_THEME=""
-eval "$(starship init zsh)"
-
-# https://github.com/seebi/dircolors-solarized
-# curl https://raw.githubusercontent.com/seebi/dircolors-solarized/master/dircolors.ansi-dark --output ~/.dircolors
-if [ -f ~/.dircolors ]; then
-    eval `dircolors ~/.dircolors`
-fi
-
 # Hide username in prompt
 DEFAULT_USER=`whoami`
+
+eval "$(starship init zsh)"
 
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
@@ -36,13 +20,9 @@ plugins=(
     colored-man-pages
 )
 
-if command -v composer &> /dev/null; then
-    plugins+=("composer")
-fi
+command -v composer &> /dev/null && plugins+=("composer")
+command -v nvm &> /dev/null && plugins+=("nvm")
 
-if command -v nvm &> /dev/null; then
-    plugins+=("nvm")
-fi
 
 # Load the shell dotfiles, and then some:
 # * ~/.dotfiles-custom can be used for other settings you don’t want to commit.
@@ -66,8 +46,3 @@ if [ -d "$HOME/.nvm" ]; then
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 fi
-
-if [ -f ~/.phpbrew/bashrc ]; then
-    [[ -e ~/.phpbrew/bashrc ]] && source ~/.phpbrew/bashrc
-fi
-
