@@ -1,0 +1,57 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editors & IDEs
+*.swp
+*.swo
+.*.sw?
+.idea/
+.fleet/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Node / JS
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# PHP & Testing caches
+.phpunit-watcher-cache.php
+.phpunit.result.cache
+infection.json
+
+# Secrets & Environment variables
+.env
+.env.*
+!.env.example
+!.env.dist
+*.env
+
+# Private Keys & Certificates
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+id_rsa*
+id_ed25519*
+id_ecdsa*
+*.kdbx
+
+# Cloud & Service Credentials
+.aws/
+.azure/
+.gcp/
+credentials.json
+service-account*.json
+terraform.tfstate*
+kubeconfig
+
+# Sensitive Shell & History Logs
+.*_history
+*.history
+
