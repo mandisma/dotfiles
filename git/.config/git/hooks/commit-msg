@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v vale &> /dev/null; then
+    exit 0
+fi
+
+COMMIT_MSG_FILE="$1"
+
+# Skip linting if commit message file doesn't exist
+[[ -f "$COMMIT_MSG_FILE" ]] || exit 0
+
+# Extract non-comment lines
+msg=$(grep -v '^#' "$COMMIT_MSG_FILE" || true)
+
+# Skip empty commit messages (Git will abort on its own)
+[[ -n "${msg//[[:space:]]/}" ]] || exit 0
+
+# Run Vale on the commit message
+if ! printf "%s\n" "$msg" | vale --path=COMMIT_EDITMSG; then
+    printf "\n\033[0;31m[commit-msg hook] Commit message rejected by Vale (ai-tells-commits).\033[0m\n" >&2
+    printf "\033[0;33mFix the alerts above, or bypass with: git commit --no-verify\033[0m\n\n" >&2
+    exit 1
+fi

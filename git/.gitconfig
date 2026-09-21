@@ -3,6 +3,7 @@
 
 [core]
 	excludesfile = ~/.global-gitignore
+	hooksPath = ~/.config/git/hooks
 	pager = delta
 	editor = vim
 

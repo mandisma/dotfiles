@@ -1,0 +1,8 @@
+[Dd]otfiles
+Zsh
+Starship
+statusline
+rebase
+GNU
+Vim
+Delta

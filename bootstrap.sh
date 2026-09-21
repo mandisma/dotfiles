@@ -110,7 +110,23 @@ else
 fi
 
 
-# 7. Stow Dotfiles
+# 7. Vale Prose Linter
+info "Installing Vale"
+if ! command -v vale &> /dev/null; then
+    mkdir -p "$HOME/.local/bin"
+    VALE_VERSION=$(curl -sIL "https://github.com/vale-cli/vale/releases/latest" | grep -i '^location:' | tail -n 1 | awk -F'/tag/v' '{print $2}' | tr -d '\r\n')
+    if [[ -n "$VALE_VERSION" ]]; then
+        curl -sL "https://github.com/vale-cli/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz" | tar -xz -C "$HOME/.local/bin" vale
+        chmod +x "$HOME/.local/bin/vale"
+        success " - Vale v${VALE_VERSION} installed to ~/.local/bin/vale"
+    else
+        error "Failed to resolve latest Vale release. You can install it manually from https://github.com/vale-cli/vale/releases"
+    fi
+else
+    echo " - Vale is already installed."
+fi
+
+# 8. Stow Dotfiles
 info "Stowing dotfiles"
 cd "$DOTFILES_DIRECTORY"
 mkdir -p "$HOME/.config"
@@ -118,7 +134,13 @@ mkdir -p "$HOME/.config"
 # Clean up legacy files to avoid stow conflicts
 rm -f "$HOME/.global-gitconfig"
 
-stow -R git starship vim zsh
+stow -R git starship vim zsh vale
+
+# 9. Sync Vale Styles
+if command -v vale &> /dev/null; then
+    info "Syncing Vale styles"
+    vale sync || true
+fi
 
 printf "\n"
 success "++++++++++++++++++++++++++"

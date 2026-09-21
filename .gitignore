@@ -1,3 +1,9 @@
 .idea/
 *.swp
 .DS_Store
+
+# Vale downloaded styles (synced via 'vale sync')
+vale/.config/vale/styles/*
+!vale/.config/vale/styles/config/
+vale/.config/vale/styles/config/*
+!vale/.config/vale/styles/config/vocabularies/
