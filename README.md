@@ -11,8 +11,10 @@ Personal dotfiles for Fedora system customization.
 - **Command-line tools**:
     - `bat`: alternative to `cat`
     - `delta`: syntax-highlighting diff viewer
-    - `zoxide`: fast directory jumper replacing `cd`
+    - `fd`: simple, fast alternative to `find`
     - `fzf`: command-line fuzzy finder
+    - `rg`: fast recursive grep / alternative to `grep`
+    - `zoxide`: fast directory jumper replacing `cd`
 
 ## How to install
 
@@ -32,9 +34,9 @@ Each top-level directory represents a Stow package:
 .gitignore                  # Prevents committing unwanted files
 bootstrap.sh                # Fedora setup script
 git/                        # Git configuration
+  .config/git/config        # Main git settings (delta, merge, rebase, aliases)
+  .config/git/ignore        # Global ignore patterns
   .config/git/hooks/        # Global Git hooks (Vale commit-msg linting)
-  .gitconfig                # Main git settings (delta, merge, rebase, aliases)
-  .global-gitignore         # Global ignore patterns
 starship/                   # Starship prompt config
   .config/starship.toml
 vale/                       # Vale prose linter config
