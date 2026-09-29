@@ -36,10 +36,6 @@ if ! command -v dnf &> /dev/null; then
     exit 1
 fi
 
-if ! command -v stow &> /dev/null; then
-    error "GNU Stow not found. It will be installed in the next step."
-fi
-
 printf "\n${YELLOW}-------------- Bootstrap Terminal --------------${NC}\n"
 printf "${GREEN}OS Detected:${NC} %s\n" "$os_id"
 printf "${GREEN}Package Manager:${NC} dnf\n"
@@ -58,7 +54,7 @@ info "Installing dependencies"
 sudo dnf install -y \
     curl wget zip git stow \
     zsh fzf vim python3 tldr \
-    bat git-delta zoxide
+    bat git-delta zoxide ripgrep fd-find
 
 # 3. Default Shell Setup
 zsh_bin=$(command -v zsh)
@@ -132,7 +128,7 @@ cd "$DOTFILES_DIRECTORY"
 mkdir -p "$HOME/.config"
 
 # Clean up legacy files to avoid stow conflicts
-rm -f "$HOME/.global-gitconfig"
+rm -f "$HOME/.global-gitconfig" "$HOME/.gitconfig" "$HOME/.global-gitignore"
 
 stow -R git starship vim zsh vale
 

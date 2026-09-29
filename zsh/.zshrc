@@ -29,6 +29,9 @@ if [[ -f "$ANTIDOTE_DIR/antidote.zsh" ]]; then
 fi
 
 # History Settings
+export HISTFILE="$HOME/.zsh_history"
+export HISTSIZE=10000
+export SAVEHIST=10000
 setopt HIST_IGNORE_ALL_DUPS    # Don't record an entry that was just recorded.
 setopt HIST_REDUCE_BLANKS      # Remove superfluous blanks.
 setopt HIST_IGNORE_SPACE       # Don't record entries starting with a space.
@@ -36,6 +39,7 @@ setopt HIST_EXPIRE_DUPS_FIRST   # Expire duplicate entries first.
 setopt SHARE_HISTORY           # Share history between all sessions.
 setopt INC_APPEND_HISTORY      # Write to history file immediately.
 setopt HIST_FIND_NO_DUPS       # Do not display duplicate search lines.
+setopt autocd                  # Automatically cd into typed directories.
 
 export HISTORY_IGNORE="(ls|cd|cd -|pwd|exit|date|* --help)"
 
@@ -55,7 +59,6 @@ alias ggone="git gone"
 command -v starship &>/dev/null && eval "$(starship init zsh)"
 if command -v zoxide &>/dev/null; then
     eval "$(zoxide init zsh --cmd cd)"
-    alias z=cd
 fi
 
 # Machine-local overrides
