@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Git hooks run with a minimal environment; ensure user-local installs (vale) are reachable
+PATH="$HOME/.local/bin:$PATH"
+
 if ! command -v vale &> /dev/null; then
     exit 0
 fi

@@ -3,6 +3,7 @@ set nocompatible
 set scrolloff=7
 set showmatch
 set ignorecase
+set smartcase
 set hlsearch
 set incsearch
 set cursorline

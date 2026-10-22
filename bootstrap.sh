@@ -41,7 +41,7 @@ printf "${GREEN}OS Detected:${NC} %s\n" "$os_id"
 printf "${GREEN}Package Manager:${NC} dnf\n"
 printf "${YELLOW}------------------------------------------------${NC}\n"
 
-read -p "This will configure your system and stow dotfiles. Continue? [y/N]: " reply
+read -r -p "This will configure your system and stow dotfiles. Continue? [y/N]: " reply
 if [[ ! "$reply" =~ ^[Yy]$ ]]; then
     printf "${RED}Aborting.${NC}\n"
     exit 0
@@ -88,8 +88,8 @@ fi
 # 6. Git Configuration
 info "Configuring Git local identity"
 if [[ ! -f "$HOME/.gitconfig.local" ]]; then
-    read -p " - Git Author Name: " git_authorname
-    read -p " - Git Author Email: " git_authoremail
+    read -r -p " - Git Author Name: " git_authorname
+    read -r -p " - Git Author Email: " git_authoremail
     git config -f "$HOME/.gitconfig.local" user.name "$git_authorname"
     git config -f "$HOME/.gitconfig.local" user.email "$git_authoremail"
     if [[ -f "$HOME/.ssh/id_ed25519.pub" ]]; then
