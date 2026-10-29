@@ -24,6 +24,35 @@ error() {
     printf "${RED}Error: %s${NC}\n" "$1"
 }
 
+# Download a release tarball, verify its SHA-256, and extract a single binary
+# into ~/.local/bin. Args: <url> <sha256> <binary-name>
+install_pinned_binary() {
+    local url="$1" expected_sha256="$2" binary="$3"
+    local tmp_dir
+    tmp_dir=$(mktemp -d) || return 1
+
+    if ! curl -fsSL "$url" -o "$tmp_dir/tarball"; then
+        error "Failed to download $binary"
+        rm -rf "$tmp_dir"
+        return 1
+    fi
+
+    if ! printf '%s  %s\n' "$expected_sha256" "$tmp_dir/tarball" | sha256sum --check --strict --status -; then
+        error "SHA-256 mismatch for $binary (corrupted download or changed release)"
+        rm -rf "$tmp_dir"
+        return 1
+    fi
+
+    if ! tar -xzf "$tmp_dir/tarball" -C "$HOME/.local/bin" "$binary"; then
+        error "Failed to extract $binary"
+        rm -rf "$tmp_dir"
+        return 1
+    fi
+
+    chmod 0755 "$HOME/.local/bin/$binary"
+    rm -rf "$tmp_dir"
+}
+
 # 1. OS & Package Manager Check (Fedora only)
 os_id=$(awk -F= '$1=="ID" { print $2 }' /etc/os-release | tr -d '"')
 if [[ "$os_id" != "fedora" ]]; then
@@ -79,8 +108,17 @@ fi
 # 5. Starship Prompt
 info "Installing Starship"
 if ! command -v starship &> /dev/null; then
-    sudo dnf copr enable -y atim/starship
-    sudo dnf install -y starship
+    mkdir -p "$HOME/.local/bin"
+    # Pinned official release (replaces the third-party 'atim/starship' COPR)
+    STARSHIP_VERSION="1.25.1"
+    if install_pinned_binary \
+        "https://github.com/starship/starship/releases/download/v${STARSHIP_VERSION}/starship-x86_64-unknown-linux-gnu.tar.gz" \
+        "4488c11ca632327d1f1f16fb2f102c0646094c35479cd5435991385da43c61ac" \
+        "starship"; then
+        success " - Starship v${STARSHIP_VERSION} installed to ~/.local/bin/starship"
+    else
+        error " - Starship installation failed. Install it manually from https://github.com/starship/starship/releases"
+    fi
 else
     echo " - Starship is already installed."
 fi
@@ -110,13 +148,15 @@ fi
 info "Installing Vale"
 if ! command -v vale &> /dev/null; then
     mkdir -p "$HOME/.local/bin"
-    VALE_VERSION=$(curl -sIL "https://github.com/vale-cli/vale/releases/latest" | grep -i '^location:' | tail -n 1 | awk -F'/tag/v' '{print $2}' | tr -d '\r\n')
-    if [[ -n "$VALE_VERSION" ]]; then
-        curl -sL "https://github.com/vale-cli/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz" | tar -xz -C "$HOME/.local/bin" vale
-        chmod +x "$HOME/.local/bin/vale"
+    # Pinned release verified against its published checksum (replaces 'latest' curl | tar)
+    VALE_VERSION="3.21.0"
+    if install_pinned_binary \
+        "https://github.com/vale-cli/vale/releases/download/v${VALE_VERSION}/vale_${VALE_VERSION}_Linux_64-bit.tar.gz" \
+        "96997d19a4ca6981673b0d4c5ca7f3ede4a9f97964a96edc29fba9e28a328336" \
+        "vale"; then
         success " - Vale v${VALE_VERSION} installed to ~/.local/bin/vale"
     else
-        error "Failed to resolve latest Vale release. You can install it manually from https://github.com/vale-cli/vale/releases"
+        error " - Vale installation failed. Install it manually from https://github.com/vale-cli/vale/releases"
     fi
 else
     echo " - Vale is already installed."
